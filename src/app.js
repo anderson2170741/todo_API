@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 require('dotenv').config();
 
 const userRoutes = require("./routes/users.routes");
@@ -14,10 +15,11 @@ db.sync().then(() => console.log("Base de datos sincronizada"));
 const app = express();
 
 app.use(express.json());
-
-const PORT = process.env.PORT ?? 4000;
+app.use(cors());
 
 app.use(userRoutes);
+
+const PORT = process.env.PORT ?? 4000;
 
 app.get('/', (req, res) => {
     res.send('Bienvenido a mi server');
