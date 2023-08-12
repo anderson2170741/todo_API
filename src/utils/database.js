@@ -8,8 +8,9 @@ const db = new Sequelize({
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     dialect: "postgres",
-    dialectOptions: {
-        ssl: false,
+    ddialectOptions: {
+        ssl: true, // Habilitar SSL
+        rejectUnauthorized: false, // Deshabilitar la verificación de certificados
     },
     //dialectOptions: { ssl: { require: true, rejectUnauthorized: false } },
 });
