@@ -42,7 +42,7 @@ const updateUser = async (req, res) => {
     const user = await Users.findByPk(id);
 
     if (!user) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
+      return res.status(404).json({ error });
     }
 
     // Actualiza los datos del usuario
@@ -177,7 +177,7 @@ const updateTask = async (req, res) => {
     const task = await Tasks.findByPk(id);
 
     if (!task) {
-      return res.status(404).json({ error: "Tarea no encontrada" });
+      return res.status(404).json({ error });
     }
 
     await task.update(updatedTaskData);
