@@ -10,6 +10,7 @@ const db = new Sequelize(process.env.DB_LINK, {
     }
 });
 
+
 //const db = new Sequelize({
 //    host: process.env.DB_HOST,
 //    database: process.env.DB_DATABASE,
