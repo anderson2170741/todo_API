@@ -3,19 +3,6 @@ const userTasks = require("../models/userTasks.model");
 const Tasks = require("../models/tasks.model");
 const Categories = require("../models/categories.model");
 
-const getAllUsers = async (req, res) => {
-  try {
-    const allUsers = await Users.findAll({
-      attributes: {
-        exclude: ["password"],
-      },
-    });
-    res.json(allUsers);
-  } catch (error) {
-    res.status(400).json(error);
-  }
-};
-
 //?==========================================================       Un endpoint para crear usuarios         ====================================//
 
 const createUser = async (req, res) => {
@@ -30,32 +17,98 @@ const createUser = async (req, res) => {
   }
 };
 
-//?=========   un endpoint para que un usuario pueda crear tareas ( Cuando un usuario crea una tarea debe seleccionarse la categoria a la que esta pertenece)  categoryId   ====//
+//?==========================================================       Un endpoint para obtener a los users        ====================================//
 
-const createTask = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
-    const { userId, title, description, categoryId } = req.body;
+    const allUsers = await Users.findAll({
+      attributes: {
+        exclude: ["password"],
+      },
+    });
+    res.json(allUsers);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
 
-    const user = await Users.findByPk(userId);
+//?========================        Un endpoint que permita editar la información de los users        ===========//
+
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params; // Obtén el ID del usuario a editar desde los parámetros de la URL
+    const updatedUserData = req.body; // Datos actualizados del usuario
+
+    const user = await Users.findByPk(id);
+
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    const createdTask = await Tasks.create({
-      title,
-      description,
-      completed: false,
-      categoryId,
-      userId, // Asociar la tarea al usuario
-    });
+    // Actualiza los datos del usuario
+    await user.update(updatedUserData);
 
-    // Crear la entrada en la tabla pivote userTasks
-    await userTasks.create({
-      userId,
-      taskId: createdTask.id, // Obtener el id de la tarea recién creada
-    });
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
 
-    res.status(201).send(createdTask);
+//?========================        Un endpoint que permita eliminar users        ===========//
+
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Users.destroy({
+      where: { id }, 
+    });
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//?=========   un endpoint para que un usuario pueda crear tareas ( Cuando un usuario crea una tarea debe seleccionarse la categoria a la que esta pertenece)  categoryId   ====//
+
+const createTask = async (req, res) => {
+  try {
+    const { users, title, description, categoryId } = req.body;
+
+    // Verifica que la lista de usuarios no esté vacía
+    if (!users || !Array.isArray(users) || users.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "La lista de usuarios es inválida o está vacía" });
+    }
+
+    const createdTasks = [];
+
+    for (const userId of users) {
+      const user = await Users.findByPk(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ error: `Usuario con ID ${userId} no encontrado` });
+      }
+
+      const createdTask = await Tasks.create({
+        title,
+        description,
+        completed: false,
+        categoryId,
+        userId, // Asocia la tarea al usuario actual
+      });
+
+      // Crea la entrada en la tabla pivote userTasks
+      await userTasks.create({
+        userId,
+        taskId: createdTask.id, // Obtiene el ID de la tarea recién creada
+      });
+
+      createdTasks.push(createdTask);
+    }
+
+    res.status(201).json(createdTasks);
   } catch (error) {
     res.status(500).json(error);
   }
@@ -101,6 +154,106 @@ const getUserById = async (req, res) => {
   }
 };
 
+//?==========================================================       Un endpoint para obtener a las tasks       ====================================//
+
+const getAllTaks = async (req, res) => {
+  try {
+    const AllTaks = await Tasks.findAll({
+      attributes: {},
+    });
+    res.json(AllTaks);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//?========================        Un endpoint que permita editar la información de las tasks        ===========//
+
+const updateTask = async (req, res) => {
+  try {
+    const { id } = req.params; 
+    const updatedTaskData = req.body; 
+
+    const task = await Tasks.findByPk(id);
+
+    if (!task) {
+      return res.status(404).json({ error: "Tarea no encontrada" });
+    }
+
+    await task.update(updatedTaskData);
+
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+
+//?========================        Un endpoint que permita eliminar tareas         ===========//
+
+const deleteTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const userTaskToDelete = await userTasks.findOne({
+      where: {
+        taskId: id, 
+      },
+    });
+
+    if (!userTaskToDelete) {
+      return res.status(404).json({ error });
+    }
+
+    await userTaskToDelete.destroy();
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+//?==========================================================       Un endpoint para crear categories        ====================================//
+
+const createCategory = async (req, res) => {
+  try {
+    const newCategory = req.body; //* name
+
+    const createdCategory = await Categories.create(newCategory);
+
+    res.status(201).json(createdCategory);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//?==========================================================       Un endpoint para obtener a las categories        ====================================//
+
+const getAllCategories = async (req, res) => {
+  try {
+    const allCategories = await Categories.findAll({
+      attributes: {},
+    });
+    res.json(allCategories);
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
+//?========================        Un endpoint que permita eliminar categories         ===========//
+
+const deleteCategories = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Categories.destroy({
+      where: { id },
+    });
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json(error);
+  }
+};
+
 //?===   Un endpoint para que un usuario pueda cambiar el atributo completed de una tarea (false a true o viceversa ) por defecto una tarea se crea con el atributo completed false    ====//
 
 const taskCompletion = async (req, res) => {
@@ -121,36 +274,18 @@ const taskCompletion = async (req, res) => {
   }
 };
 
-//?========================        Un endpoint que permita eliminar tareas         ===========//
-
-const deleteTask = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const userTaskToDelete = await userTasks.findOne({
-      where: {
-        taskId: id // Cambia taskId por el nombre correcto de la columna en tu modelo userTasks
-      }
-    });
-
-    if (!userTaskToDelete) {
-      return res.status(404).json({ error });
-    }
-
-    await userTaskToDelete.destroy();
-
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json(error);
-  }
-};
-
-
 module.exports = {
   getAllUsers,
   getUserById,
+  getAllTaks,
+  getAllCategories,
   createUser,
+  createCategory,
   createTask,
   deleteTask,
-  taskCompletion
+  deleteUser,
+  deleteCategories,
+  taskCompletion,
+  updateUser,
+  updateTask,
 };
