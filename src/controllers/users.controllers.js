@@ -4,6 +4,49 @@ const Tasks = require("../models/tasks.model");
 const Categories = require("../models/categories.model");
 
 //?==========================================================       Un endpoint para crear usuarios         ====================================//
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *    User:
+ *      type: object
+ *      properties:
+ *        username:
+ *          type: string
+ *          description: the user name
+ *        email:
+ *          type: string
+ *          description: the user email
+ *        password:
+ *          type: string
+ *          description: the user password
+ *      required:
+ *        - name
+ *        - email
+ *        - password
+ *      example:
+ *        username: Anderson
+ *        email: andersondurapc@gmail.com
+ *        password: 1234
+ */
+
+/**
+ * @swagger
+ * /users:
+ *  post: 
+ *    summary: create a new user
+ *    tags: [User]
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            $ref: '#/components/schemas/User'
+ *    responses:
+ *      200:
+ *        description: New user created!
+ */
 
 const createUser = async (req, res) => {
   try {
@@ -19,6 +62,25 @@ const createUser = async (req, res) => {
 
 //?==========================================================       Un endpoint para obtener a los users        ====================================//
 
+/**
+ * @swagger
+ * /users:
+ *  get: 
+ *    summary: return all users
+ *    tags: [User]
+ *    responses:
+ *      200:
+ *        description: All users!
+ *        content:
+ *          applicaption/json:
+ *            schema:
+ *              type: array
+ *              items:
+ *              $ref: '#/components/schemas/User'
+ * 
+ *
+ */
+
 const getAllUsers = async (req, res) => {
   try {
     const allUsers = await Users.findAll({
@@ -33,6 +95,33 @@ const getAllUsers = async (req, res) => {
 };
 
 //?========================        Un endpoint que permita editar la información de los users        ===========//
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update a user
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: the user id
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: User update!
+ *       404:
+ *         description: User not faund!
+ */
 
 const updateUser = async (req, res) => {
   try {
@@ -56,11 +145,31 @@ const updateUser = async (req, res) => {
 
 //?========================        Un endpoint que permita eliminar users        ===========//
 
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User deleted
+ *     responses:
+ *       200:
+ *         description: User delete!
+ *       404:
+ *         description: User not faund!
+ */
+
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
     await Users.destroy({
-      where: { id }, 
+      where: { id },
     });
     res.status(204).send();
   } catch (error) {
@@ -69,6 +178,54 @@ const deleteUser = async (req, res) => {
 };
 
 //?=========   un endpoint para que un usuario pueda crear tareas ( Cuando un usuario crea una tarea debe seleccionarse la categoria a la que esta pertenece)  categoryId   ====//
+
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *    Task:
+ *      type: object
+ *      properties:
+ *        users:
+ *          type: array
+ *          description: user id
+ *        title:
+ *          type: string
+ *          description: task title
+ *        description:
+ *          type: string
+ *          description: task description
+ *        categoryId:
+ *          type: integer
+ *          description: category id
+ *      required:
+ *        - users
+ *        - title
+ *        - categoryId
+ *      example:
+ *        users: [1, 3]
+ *        title: Pokédex
+ *        description: Crear una app que proporciona información detallada sobre los Pokémon tales como como sus características, tipos y más.
+ *        categoryId: 1
+ */
+
+/**
+ * @swagger
+ * /tasks:
+ *  post: 
+ *    summary: create a new task
+ *    tags: [Task]
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            $ref: '#/components/schemas/Task'
+ *    responses:
+ *      201:
+ *        description: New task created!
+ */
 
 const createTask = async (req, res) => {
   try {
@@ -116,6 +273,26 @@ const createTask = async (req, res) => {
 
 //?===============================     Un endpoint para obtener todas las tareas de un usuario incluidas sus categorias ( filtros (where), include)    =====================//
 
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Find all the tasks of a user
+ *     tags: [Task]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: ID of the user to retrieve
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: All users!
+ *       404:
+ *         description: User not faund!
+ */
+
 const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -156,6 +333,26 @@ const getUserById = async (req, res) => {
 
 //?==========================================================       Un endpoint para obtener a las tasks       ====================================//
 
+/**
+ * @swagger
+ * /tasks:
+ *  get: 
+ *    summary: return all tasks
+ *    tags: [Task]
+ *    responses:
+ *      200:
+ *        description: All task!
+ *        content:
+ *          applicaption/json:
+ *            schema:
+ *              type: array
+ *              items:
+ *              $ref: '#/components/schemas/Task'
+ * 
+ *
+ */
+
+
 const getAllTaks = async (req, res) => {
   try {
     const AllTaks = await Tasks.findAll({
@@ -169,10 +366,36 @@ const getAllTaks = async (req, res) => {
 
 //?========================        Un endpoint que permita editar la información de las tasks        ===========//
 
+/**
+ * @swagger
+ * /tasks/{id}:
+ *   put:
+ *     summary: Update a task
+ *     tags: [Task]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: the task id
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/Task'
+ *     responses:
+ *       200:
+ *         description: Task update!
+ *       404:
+ *         description: Task not faund!
+ */
+
 const updateTask = async (req, res) => {
   try {
-    const { id } = req.params; 
-    const updatedTaskData = req.body; 
+    const { id } = req.params;
+    const updatedTaskData = req.body;
 
     const task = await Tasks.findByPk(id);
 
@@ -188,8 +411,27 @@ const updateTask = async (req, res) => {
   }
 };
 
-
 //?========================        Un endpoint que permita eliminar tareas         ===========//
+
+/**
+ * @swagger
+ * /tasks/{id}:
+ *   delete:
+ *     summary: Delete a task
+ *     tags: [Task]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Task deleted
+ *     responses:
+ *       200:
+ *         description: Task delete!
+ *       404:
+ *         description: Task not faund!
+ */
 
 const deleteTask = async (req, res) => {
   try {
@@ -197,7 +439,7 @@ const deleteTask = async (req, res) => {
 
     const userTaskToDelete = await userTasks.findOne({
       where: {
-        taskId: id, 
+        taskId: id,
       },
     });
 
@@ -215,6 +457,40 @@ const deleteTask = async (req, res) => {
 
 //?==========================================================       Un endpoint para crear categories        ====================================//
 
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *    Category:
+ *      type: object
+ *      properties:
+ *        name:
+ *          type: string
+ *          description: the category name
+ *      required:
+ *        - name
+ *      example:
+ *        name: Frontend
+ */
+
+/**
+ * @swagger
+ * /categories:
+ *  post: 
+ *    summary: create a new categories
+ *    tags: [Category]
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            $ref: '#/components/schemas/Category'
+ *    responses:
+ *      201:
+ *        description: New category created!
+ */
+
 const createCategory = async (req, res) => {
   try {
     const newCategory = req.body; //* name
@@ -229,6 +505,25 @@ const createCategory = async (req, res) => {
 
 //?==========================================================       Un endpoint para obtener a las categories        ====================================//
 
+/**
+ * @swagger
+ * /categories:
+ *  get: 
+ *    summary: return all categories
+ *    tags: [Category]
+ *    responses:
+ *      200:
+ *        description: All categories!
+ *        content:
+ *          applicaption/json:
+ *            schema:
+ *              type: array
+ *              items:
+ *              $ref: '#/components/schemas/Category'
+ * 
+ *
+ */
+
 const getAllCategories = async (req, res) => {
   try {
     const allCategories = await Categories.findAll({
@@ -241,6 +536,26 @@ const getAllCategories = async (req, res) => {
 };
 
 //?========================        Un endpoint que permita eliminar categories         ===========//
+
+/**
+ * @swagger
+ * /categories/{id}:
+ *   delete:
+ *     summary: Delete a category
+ *     tags: [Category]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Category deleted
+ *     responses:
+ *       200:
+ *         description: Category delete!
+ *       404:
+ *         description: Category not faund!
+ */
 
 const deleteCategories = async (req, res) => {
   try {
@@ -255,6 +570,38 @@ const deleteCategories = async (req, res) => {
 };
 
 //?===   Un endpoint para que un usuario pueda cambiar el atributo completed de una tarea (false a true o viceversa ) por defecto una tarea se crea con el atributo completed false    ====//
+
+/**
+ * @swagger
+ * /tasks/{id}/completed:
+ *   patch:
+ *     summary: Update task completion status
+ *     tags: [Task]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *         type: string
+ *         required: true
+ *         description: the task id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               completed:
+ *                 type: boolean
+ *                 description: New completion status (true or false)
+ *             required:
+ *               - completed
+ *     responses:
+ *       200:
+ *         description: Task completion status updated successfully
+ *       404:
+ *         description: Task not found
+ */
 
 const taskCompletion = async (req, res) => {
   try {

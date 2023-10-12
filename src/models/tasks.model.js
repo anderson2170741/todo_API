@@ -8,7 +8,7 @@ const Tasks = db.define(
     // omito id porque se genera por defecto como pk e increment
     title: {
       type: DataTypes.STRING(50),
-      allowNull: false,
+      allowNull: true,
     },
     description: {
       type: DataTypes.STRING,
@@ -21,7 +21,7 @@ const Tasks = db.define(
     },
     categoryId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
   },
   {
